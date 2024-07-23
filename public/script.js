@@ -2,10 +2,11 @@
 
 const socket = io();
 var mysocketid;
-
+var firstReload = true;
 socket.on('connect',()=>{
     mysocketid = socket.id
 })
+
 
 function getLocation(){
     if(navigator.geolocation){
@@ -28,8 +29,6 @@ function getLocation(){
 
 getLocation()
 
-var map = L.map('map').setView([0,0],13)
-
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -42,7 +41,10 @@ const markers = {};
 socket.on('update-location',(data)=>{       
     const {id,latitude,longitude} = data;
 
-    if(id===mysocketid) map.setView([latitude, longitude],13)
+    if(id===mysocketid && firstReload){
+        map.setView([latitude, longitude],13)
+        firstReload = false
+        }
     if(markers[id]){
         markers[id].setLatLng([latitude,longitude])
     }
@@ -50,7 +52,7 @@ socket.on('update-location',(data)=>{
         console.log("new merker added");
         markers[id] = L.marker([latitude,longitude]).addTo(map);
     }
-    console.log(markers);
+    // console.log(markers);
 
 })
 
